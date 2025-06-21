@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula+ Beta</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter para el cuerpo y Montserrat para títulos impactantes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos base del cuerpo */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #3a78b5; /* Fondo azul sólido y uniforme */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            overflow-x: hidden; /* Evita el scroll horizontal indeseado */
+            scroll-behavior: smooth; /* Desplazamiento suave */
+
+            /* Ocultar la barra de desplazamiento globalmente */
+            scrollbar-width: none; /* Para Firefox */
+            -ms-overflow-style: none;  /* Para IE y Edge */
+        }
+        /* Ocultar la barra de desplazamiento globalmente para navegadores basados en Webkit (Chrome, Safari) */
+        body::-webkit-scrollbar {
+            display: none; 
+        }
+
+        /* Overlay para el efecto de luz del ratón */
+        #mouse-light-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Permite que los clics pasen a los elementos debajo */
+            z-index: -1; /* Asegura que esté detrás del contenido principal */
+            transition: background 0.1s linear; /* Transición suave para el movimiento de la luz */
+        }
+
+        /* Sección de introducción de pantalla completa (Hero) */
+        .hero-section {
+            width: 100%;
+            height: 100vh; /* Ocupa toda la altura de la ventana */
+            background: linear-gradient(135deg, rgba(74, 144, 226, 0.9), rgba(0, 56, 114, 0.9)); /* Superposición de gradiente */
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            overflow: hidden;
+            position: relative; /* Contexto de posicionamiento para los iconos */
+            font-family: 'Montserrat', sans-serif; /* Fuente de impacto para el hero */
+        }
+
+        /* Animación de entrada para el título */
+        @keyframes fadeInZoomBounce {
+            0% { opacity: 0; transform: scale(0.5) translateY(20px); }
+            70% { opacity: 1; transform: scale(1.1) translateY(-10px); } /* Efecto de rebote */
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .hero-title {
+            animation: fadeInZoomBounce 1.8s ease-out forwards;
+            font-size: clamp(3rem, 10vw, 7rem); /* Tamaño de fuente responsivo */
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease, text-shadow 0.3s ease; /* Transición para el hover */
+            position: relative; /* Necesario para el pseudo-elemento subrayado */
+            display: inline-block; /* Para que el subrayado abarque solo el texto */
+            cursor: pointer; /* VUELVE A CAMBIAR EL CURSOR AL HACER HOVER */
+        }
+
+        .hero-title:hover {
+            transform: scale(1.1); /* Aumenta el tamaño al pasar el ratón */
+            text-shadow: 6px 6px 15px rgba(0, 0, 0, 0.6); /* Sombra más pronunciada */
+        }
+
+        /* Subrayado animado para el título */
+        .hero-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px; /* Posición debajo del texto */
+            left: 0;
+            width: 100%;
+            height: 4px; /* Grosor del subrayado */
+            background-color: white; /* Color del subrayado */
+            border-radius: 2px;
+            transform: scaleX(0); /* Inicialmente oculto */
+            transform-origin: center center; /* Escala desde el centro */
+            transition: transform 0.3s ease-out; /* Transición suave */
+        }
+
+        .hero-title:hover::after {
+            transform: scaleX(1); /* Muestra el subrayado al pasar el ratón */
+        }
+
+
+        /* Animación de entrada para el eslogan */
+        @keyframes slideUpFadeInStagger {
+            0% { opacity: 0; transform: translateY(50px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .hero-slogan {
+            animation: slideUpFadeInStagger 1.8s ease-out 0.6s forwards; /* Retraso para que aparezca después del título */
+            opacity: 0;
+            font-size: clamp(1.2rem, 3.5vw, 2.5rem);
+            max-width: 90%;
+            margin-top: 15px;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Animación para la flecha indicadora de scroll */
+        @keyframes bounceArrow {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-15px); }
+            60% { transform: translateY(-7px); }
+        }
+        .scroll-arrow {
+            position: absolute;
+            bottom: 40px;
+            width: clamp(40px, 8vw, 80px);
+            height: clamp(40px, 8vw, 80px);
+            animation: bounceArrow 2s infinite;
+            cursor: pointer;
+        }
+
+        /* Contenedor de iconos interactivos en el hero */
+        .hero-icons-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Invisible a eventos de ratón por defecto */
+            opacity: 0; /* Oculto por defecto, JS lo activará */
+            transition: opacity 0.5s ease-out; /* Fade in el contenedor */
+        }
+
+        /* Clase activada por JS para mostrar iconos */
+        .show-hero-icons .hero-icons-container {
+            opacity: 1;
+            pointer-events: auto; /* Hacer visibles a eventos de ratón */
+        }
+
+        .icon-item {
+            position: absolute;
+            opacity: 0;
+            transform: scale(0.2) rotate(180deg); /* Empieza pequeña y rotada */
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.4)); /* Sombra sutil */
+        }
+
+        /* Ajuste responsivo del tamaño de los iconos SVG */
+        .icon-item svg {
+            width: clamp(4rem, 8vw, 6rem); /* Icono ligeramente más grande */
+            height: clamp(4rem, 8vw, 6rem);
+            fill: currentColor; /* Hereda el color (blanco) */
+            stroke: rgba(255,255,255,0.3); /* Contorno sutil para definición */
+            stroke-width: 0.5px;
+        }
+
+        /* Posicionamiento y retraso de animación específicos para cada icono */
+        .icon-pencil { top: 15%; left: 10%; transform-origin: top left; }
+        .show-hero-icons .icon-pencil {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+            transition-delay: 0.1s;
+        }
+
+        .icon-sheet { top: 15%; right: 10%; transform-origin: top right; }
+        .show-hero-icons .icon-sheet {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+            transition-delay: 0.25s;
+        }
+
+        .icon-calculator { bottom: 15%; left: 50%; transform: translateX(-50%) scale(0.2) rotate(180deg); transform-origin: bottom center; }
+        .show-hero-icons .icon-calculator {
+            opacity: 1;
+            transform: translateX(-50%) scale(1) rotate(0deg);
+            transition-delay: 0.4s;
+        }
+
+        /* Estilo base para cada sección de contenido */
+        .content-section {
+            width: 100%;
+            max-width: 1000px; /* Secciones ligeramente más anchas */
+            padding: 100px 40px; /* Más padding */
+            box-sizing: border-box;
+            background-color: rgba(255, 255, 255, 0.2); /* MUCHO más transparente: 0.4 -> 0.2 */
+            border-radius: 25px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2); /* Sombra más fuerte */
+            margin-bottom: 80px; /* Mayor separación entre secciones */
+            opacity: 0; /* Por defecto oculto para las animaciones */
+            transform: scale(0.9) translateY(100px); /* Estado inicial para animación */
+            transition: opacity 1s ease-out, transform 1s ease-out;
+            border: 2px solid rgba(167, 217, 252, 0.3); /* Borde también más transparente */
+        }
+
+        /* Animación general de entrada al scroll (para secciones) */
+        .content-section.animate-in {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+
+        /* Estilo del título de sección */
+        .section-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: clamp(2rem, 5vw, 3.5rem); /* Tamaño de título responsivo */
+            font-weight: 900;
+            color: #003872; /* Azul más oscuro */
+            margin-bottom: 50px;
+            text-align: center;
+            position: relative;
+            overflow: hidden; /* Para la animación de línea */
+        }
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%) scaleX(0);
+            width: 80%;
+            height: 5px;
+            background-color: #4a90e2; /* Azul que combina */
+            border-radius: 5px;
+            transition: transform 0.8s ease-out 0.4s;
+        }
+        .content-section.animate-in .section-title::after {
+            transform: translateX(-50%) scaleX(1);
+        }
+
+        /* Animación única para "¿Qué hacemos?" section */
+        .que-hacemos .text-content {
+            opacity: 0;
+            transform: translateX(-80px);
+            transition: opacity 1s ease-out, transform 1s ease-out;
+            transition-delay: 0.3s;
+        }
+        .que-hacemos.animate-in .text-content {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .que-hacemos .image-container-quehacemos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 40px;
+            transform-style: preserve-3d; /* Para transformación 3D en el contenedor */
+        }
+        .que-hacemos .image-container-quehacemos img {
+            opacity: 0;
+            transform: rotateY(90deg) scale(0.7); /* Empieza rotada y escalada */
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .que-hacemos.animate-in .image-container-quehacemos img:nth-child(1) { transition-delay: 0.6s; }
+        .que-hacemos.animate-in .image-container-quehacemos img:nth-child(2) { transition-delay: 0.8s; }
+        .que-hacemos.animate-in .image-container-quehacemos img:nth-child(3) { transition-delay: 1s; }
+        .que-hacemos.animate-in .image-container-quehacemos img {
+            opacity: 1;
+            transform: rotateY(0deg) scale(1);
+        }
+
+        /* Animación única para "Por qué elegir Aula+" section */
+        .por-que-aula-plus .reason-card {
+            background-color: rgba(240, 248, 255, 0.2); /* Fondo más transparente */
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+            text-align: center;
+            border: 1px solid rgba(167, 217, 252, 0.3);
+        }
+        .por-que-aula-plus.animate-in .reason-card:nth-child(1) { transition-delay: 0.3s; }
+        .por-que-aula-plus.animate-in .reason-card:nth-child(2) { transition-delay: 0.6s; }
+        .por-que-aula-plus.animate-in .reason-card:nth-child(3) { transition-delay: 0.9s; }
+        .por-que-aula-plus.animate-in .reason-card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .por-que-aula-plus .reason-card h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #003872;
+            margin-bottom: 15px;
+        }
+        .por-que-aula-plus .reason-card p {
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+
+        /* Animación única para "Precios y pagos" section */
+        .precios-pagos .price-category {
+            background-color: rgba(240, 248, 255, 0.2); /* Mucho más transparente: 0.4 -> 0.2 */
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .precios-pagos.animate-in .price-category:nth-child(1) { transition-delay: 0.3s; }
+        .precios-pagos.animate-in .price-category:nth-child(2) { transition-delay: 0.6s; }
+        .precios-pagos.animate-in .price-category {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .precios-pagos .price-item {
+            opacity: 0;
+            transform: translateX(-30px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+        .precios-pagos.animate-in .price-item:nth-child(1) { transition-delay: 0.8s; }
+        .precios-pagos.animate-in .price-item:nth-child(2) { transition-delay: 0.9s; }
+        .precios-pagos.animate-in .price-item:nth-child(3) { transition-delay: 1.0s; }
+        /* Añadir más delays para otros elementos según sea necesario */
+        .precios-pagos.animate-in .price-item:nth-child(4) { transition-delay: 1.1s; }
+        .precios-pagos.animate-in .price-item:nth-child(5) { transition-delay: 1.2s; }
+        .precios-pagos.animate-in .price-item:nth-child(6) { transition-delay: 1.3s; }
+        .precios-pagos.animate-in .price-item:nth-child(7) { transition-delay: 1.4s; } /* Para la línea de Bizum */
+        .precios-pagos.animate-in .price-item {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Animación única para "Contacto" section */
+        .contacto .contact-card {
+            background-color: rgba(230, 247, 255, 0.2); /* Mucho más transparente: 0.4 -> 0.2 */
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .contacto.animate-in .contact-card:nth-child(1) { transition-delay: 0.3s; }
+        .contacto.animate-in .contact-card:nth-child(2) { transition-delay: 0.6s; }
+        .contacto.animate-in .contact-card {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .contacto .contact-detail {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .contacto.animate-in .contact-detail:nth-child(odd) { transition-delay: 0.8s; }
+        .contacto.animate-in .contact-detail:nth-child(even) { transition-delay: 1s; }
+        .contacto.animate-in .contact-detail {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+
+        /* Estilo del contenedor de imágenes */
+        .image-container-quehacemos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .image-container-quehacemos img {
+            border-radius: 15px;
+            object-fit: cover;
+            width: 100%;
+            max-width: 300px;
+            height: 200px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        /* Media queries para imágenes */
+        @media (min-width: 768px) {
+            .image-container-quehacemos img {
+                width: calc(50% - 5px);
+            }
+        }
+        @media (min-width: 1024px) {
+            .image-container-quehacemos img {
+                width: calc(33.33% - 7px);
+            }
+            .image-container-quehacemos {
+                flex-wrap: nowrap;
+            }
+        }
+
+        /* Estilo para las listas de precios */
+        .list-prices {
+            list-style: none; /* Quitamos los puntos de lista predeterminados para mayor control */
+            padding: 0;
+            margin: 0;
+        }
+        .list-prices li {
+            margin-bottom: 10px;
+            padding-left: 25px; /* Espacio para el icono de lista personalizado */
+            position: relative;
+            font-size: 1.1em;
+            color: #333;
+        }
+        .list-prices li::before {
+            content: '✓'; /* Icono de checkmark */
+            position: absolute;
+            left: 0;
+            color: #28a745; /* Color verde para el checkmark */
+            font-weight: bold;
+            font-size: 1.2em;
+            line-height: 1;
+        }
+
+        /* Estilo del pie de página */
+        footer {
+            background-color: #a7d9fc;
+            padding: 20px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #333;
+            border-top: 1px solid #cceeff;
+            width: 100%;
+            max-width: 1000px; /* Coincide con el ancho de las secciones de contenido */
+            border-radius: 25px;
+            margin-top: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Overlay para el efecto de luz del ratón -->
+    <div id="mouse-light-overlay"></div>
+
+    <!-- Sección de introducción de pantalla completa (Hero) -->
+    <div class="hero-section" id="hero-section">
+        <h1 class="hero-title" id="main-title">Aula+</h1>
+        <p class="hero-slogan">Learn Smarter, Not Harder.</p>
+        <p class="hero-slogan">(Beta Version)</p>
+        <div class="hero-icons-container">
+            <div class="icon-item icon-pencil">
+                <svg class="w-16 h-16 text-white" viewBox="0 0 24 24" fill="currentColor" stroke="white" stroke-width="0.5px">
+                    <path d="M14.06 9.06L15 8.12l1.94 1.94-1.94 1.94-1.94-1.94zm-1.94 1.94l-5-5-5 5 5 5 5-5zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                </svg>
+            </div>
+            <div class="icon-item icon-sheet">
+                <svg class="w-16 h-16 text-white" viewBox="0 0 24 24" fill="currentColor" stroke="white" stroke-width="0.5px">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zm-2 18H8v-2h4zm0-4H8v-2h4zm0-4H8V8h4zm6-6h-4V4h4z"/>
+                </svg>
+            </div>
+            <div class="icon-item icon-calculator">
+                <svg class="w-16 h-16 text-white" viewBox="0 0 24 24" fill="currentColor" stroke="white" stroke-width="0.5px">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM5 5h14v2H5zm0 14V9h14v10H5zm2-8h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2zM7 15h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/>
+                </svg>
+            </div>
+        </div>
+        <div class="scroll-arrow" onclick="document.getElementById('que-hacemos-section').scrollIntoView({ behavior: 'smooth' });">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="white">
+                <path d="M26.29 20.29 18 28.59V0h-2v28.59l-8.29-8.3-1.42 1.42 10 10a1 1 0 0 0 1.41 0l10-10z" data-name="2-Arrow Down"/>
+            </svg>
+        </div>
+    </div>
+
+    <!-- Contenedor principal de secciones -->
+    <main class="flex flex-col items-center w-full max-w-7xl px-4 py-8">
+        <!-- Sección: ¿Qué hacemos? -->
+        <section id="que-hacemos-section" class="content-section que-hacemos">
+            <h2 class="section-title">Nuestra Misión</h2>
+            <div class="flex flex-col md:flex-row items-center md:items-start gap-12">
+                <div class="md:w-1/2 text-content">
+                    <p class="text-lg text-gray-700 leading-relaxed mb-6">
+                        En <b>Aula+</b>, Àlex, Gabriel e Irene nos dedicamos a transformar tu experiencia de aprendizaje. Ofrecemos contenido educativo de <b>máxima calidad</b>, diseñado para ser claro, conciso y, sobre todo, efectivo. Nuestro objetivo es que no solo estudies, sino que <b>domines</b> cada materia.
+                    </p>
+                    <p class="text-lg text-gray-700 leading-relaxed mb-4">
+                        Descubre nuestros recursos especializados, disponibles en formato <b>PDF digital</b> o en <b>físico</b>, listos para adaptarse a tu estilo de estudio:
+                    </p>
+                    <ul class="list-disc list-inside text-lg text-gray-700 leading-relaxed space-y-2">
+                        <li><b>Apuntes Detallados:</b> Toda la información esencial, organizada para tu éxito.</li>
+                        <li><b>Esquemas Visuales:</b> Conceptos complejos simplificados para una rápida comprensión.</li>
+                        <li><b>Clases Personalizadas:</b> Apoyo directo y adaptado a tus necesidades específicas.</li>
+                        <li><b>Agenda Digital Exclusiva:</b> Organiza tu tiempo y maximiza tu productividad.</li>
+                    </ul>
+                    <p class="text-md text-red-600 mt-6 font-semibold">
+                        ¡Atención! Actualmente, nuestros servicios están diseñados y disponibles <b>exclusivamente para estudiantes del curso Earhart (ESO 4)</b>. ¡Únete a la comunidad Aula+ y eleva tu nivel académico!
+                    </p>
+                </div>
+                <!-- Contenedor de imágenes para la sección "¿Qué hacemos?" -->
+                <div class="md:w-1/2 image-container-quehacemos">
+                    <img src="https://mrpaper.es/modules/ph_simpleblog/covers/7.jpg" alt="" class="rounded-lg shadow-lg">
+                    <img src="https://imgs.search.brave.com/5NW-iF_EHwW-H02-DD9zLhF-ykaRbTgKuav95nVnOEs/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tYXJr/ZXRwbGFjZS5jYW52/YS5jb20vRUFHVHYw/QUthbzgvMS8wLzE2/MDB3L2NhbnZhLWdy/YWZpY28tbWFwYS1j/b25jZXB0dWFsLWVz/cXVlbWFzLWxsdXZp/YS1kZS1pZGVhcy1t/b2Rlcm5vLW11bHRp/Y29sb3ItWjNpZXNW/Wklyc1EuanBn" alt="" class="rounded-lg shadow-lg">
+                    <img src="https://imgs.search.brave.com/mBlVlCkZD0u596Qbbbosc2MHeC76D5zLyhD1ch5I1dc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93YWxs/cGFwZXJzLmNvbS9p/bWFnZXMvaGQvY29s/b3JmdWwtaGV4YWdv/bmFsLXBlcmlvZGlj/LXRhYmxlLWRlc2ln/bi14a3Z0Y3MxNDR6/bnhicmduLmpwZw" alt="" class="rounded-lg shadow-lg">
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección: ¿Por qué elegir Aula+? -->
+        <section id="por-que-aula-plus-section" class="content-section por-que-aula-plus">
+            <h2 class="section-title">¿Por Qué Elegir Aula+?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <div class="reason-card">
+                    <h3>Calidad Garantizada</h3>
+                    <p>Nuestro contenido es elaborado con un enfoque en la claridad y la efectividad, asegurando que cada material te acerque al dominio de la materia.</p>
+                </div>
+                <div class="reason-card">
+                    <h3>Flexibilidad a Tu Medida</h3>
+                    <p>Ya sea que prefieras la comodidad del formato digital o la tangibilidad de los apuntes físicos, Aula+ se adapta a tu estilo de estudio.</p>
+                </div>
+                <div class="reason-card">
+                    <h3>Soporte Personalizado</h3>
+                    <p>Más allá de los materiales, ofrecemos clases adaptadas a tus necesidades específicas para resolver dudas y consolidar conocimientos, proporcionando un apoyo integral.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección: Precios y pagos -->
+        <section id="precios-pagos-section" class="content-section precios-pagos">
+            <h2 class="section-title">Inversión en tu Futuro</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div class="price-category">
+                    <h3 class="text-3xl font-semibold text-gray-800 mb-6 text-center">Un solo tema</h3>
+                    <ul class="list-prices">
+                        <li class="price-item">Matemáticas: <span class="font-bold text-blue-600">2.5€</span></li>
+                        <li class="price-item">Física y Química: <span class="font-bold text-blue-600">3.5€</span></li>
+                        <li class="price-item">Geología y Biología: <span class="font-bold text-blue-600">3.5€</span></li>
+                        <li class="price-item">Lenguas: <span class="font-bold text-blue-600">2.5€</span></li>
+                        <li class="price-item">Sociales: <span class="font-bold text-blue-600">3.5€</span></li>
+                        <li class="price-item">Informática: <span class="font-bold text-blue-600">3.5€</span></li>
+                    </ul>
+                </div>
+                <div class="price-category">
+                    <h3 class="text-3xl font-semibold text-gray-800 mb-6 text-center">Todo el año (Paquete Completo)</h3>
+                    <ul class="list-prices">
+                        <li class="price-item">Matemáticas: <span class="font-bold text-blue-600">11€</span></li>
+                        <li class="price-item">Física y Química: <span class="font-bold text-blue-600">12€</span></li>
+                        <li class="price-item">Geología y Biología: <span class="font-bold text-blue-600">12€</span></li>
+                        <li class="price-item">Lenguas: <span class="font-bold text-blue-600">10€</span></li>
+                        <li class="price-item">Sociales: <span class="font-bold text-blue-600">13€</span></li>
+                        <li class="price-item">Informática: <span class="font-bold text-blue-600">12€</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3 class="text-3xl font-semibold text-gray-800 mt-12 mb-6 text-center">Formas de Pago</h3>
+            <p class="text-lg text-gray-700 mb-4 text-center">Facilitamos tu pago con opciones rápidas y seguras. ¡Elige la que mejor se adapte a ti!</p>
+            <div class="flex flex-col items-center gap-4">
+                <p class="text-2xl text-blue-800 font-bold price-item">
+                    <span class="text-red-500 text-shadow-md">Bizum Directo</span> &rarr; <span class="text-blue-600">+34 669 57 71 81</span>
+                </p>
+                <p class="text-lg text-gray-700 price-item">
+                    <b>Pago Físico:</b> A Gabriel, Àlex o Irene (aceptamos solo monedas de 50 céntimos en adelante).
+                </p>
+            </div>
+        </section>
+
+        <!-- Sección: Contacto -->
+        <section id="contacto-section" class="content-section contacto">
+            <h2 class="section-title">Conecta con Nosotros</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div class="text-center md:text-left contact-card">
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-4 contact-detail">Equipo Aula+</h3>
+                    <ul class="list-none p-0 space-y-3">
+                        <li class="text-lg text-gray-700 contact-detail"><b>Àlex:</b> <span class="text-blue-600">+34 669 57 71 81</span></li>
+                        <li class="text-lg text-gray-700 contact-detail"><b>Gabriel:</b> <span class="text-blue-600">+34 648 90 20 33</span></li>
+                        <li class="text-lg text-gray-700 contact-detail"><b>Irene:</b> <span class="text-blue-600">+34 681 03 51 65</span></li>
+                    </ul>
+                </div>
+                <div class="text-center md:text-left contact-card">
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-4 contact-detail">Contacto Directo</h3>
+                    <p class="text-lg text-gray-700 break-words contact-detail mb-3">
+                        <b>Email:</b> <a href="mailto:aula.plus.contacto@example.com" class="text-blue-600 hover:underline">contacto.aula.plus@gmail.com</a>
+                    </p>
+                    <p class="text-sm text-gray-500 mt-4 contact-detail">
+                        ¡No dudes en enviarnos un mensaje! Estamos aquí para responder a todas tus preguntas y ayudarte en tu camino académico.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Pie de página -->
+    <footer>
+        <p id="portfolio-link"class="text-sm">&copy; Sitio web creado por: Albecas100 & Gabriel Cereto</p>
+        <p class="text-sm">&copy;2025-2026 Aula +</p>
+        <p class="text-sm">Contenido exclusivo de Aula +</p>
+        <p class="text-sm">©Todos los derechos reservados</p>
+        <p class="text-sm">Contacto: <a href="mailto:contacto.aula.plus@gmail.com" class="text-blue-800 hover:underline">contacto.aula.plus@gmail.com</a></p>
+        <p class="text-sm">Fundadores y Propietarios: Àlex Castellà & Irene Loewe & Gabriel Cereto</p>
+        <p class="text-lg font-bold text-blue-900 mt-4">Aula +, Learn Smarter, Not Harder.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Smooth scroll for arrow click
+            document.querySelector('.scroll-arrow').addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = e.currentTarget.getAttribute('onclick').split("'")[1];
+                document.getElementById(targetId).scrollIntoView({ behavior: 'smooth' });
+            });
+
+            // Intersection Observer for scroll-triggered animations
+            const sections = document.querySelectorAll('.content-section');
+
+            const observerOptions = {
+                root: null, // relative to the viewport
+                rootMargin: '0px',
+                threshold: 0.2 // Trigger when 20% of the section is visible
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-in');
+                        // Optional: Unobserve once animated if you want animations to play only once
+                        // observer.unobserve(entry.target); 
+                    } else {
+                        // Optional: remove animate-in class if section leaves viewport
+                        // This makes animations replay when scrolling back up
+                         entry.target.classList.remove('animate-in');
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+            // Mouse Lightening Effect
+            const mouseLightOverlay = document.getElementById('mouse-light-overlay');
+            document.body.addEventListener('mousemove', (e) => {
+                const x = e.clientX;
+                const y = e.clientY;
+                // Create a radial gradient centered at the mouse position
+                // It goes from a light blue at the center to transparent
+                // Adjusting colors to be more subtle on a solid blue background
+                mouseLightOverlay.style.background = `radial-gradient(circle 200px at ${x}px ${y}px, rgba(173, 216, 230, 0.6) 0%, transparent 70%)`;
+            });
+
+            // Reset gradient if mouse leaves the document (optional)
+            document.body.addEventListener('mouseleave', () => {
+                 mouseLightOverlay.style.background = 'transparent';
+            });
+
+            // Aula+ title hover effect (icons and text animation)
+            const mainTitle = document.getElementById('main-title');
+            const heroSection = document.getElementById('hero-section'); // Using heroSection as the parent to add class
+
+            mainTitle.addEventListener('mouseover', () => {
+                heroSection.classList.add('show-hero-icons');
+            });
+
+            mainTitle.addEventListener('mouseout', () => {
+                // Delay removing the class slightly to prevent flickering if mouse briefly leaves title
+                // but is still within hero section (though icons are pointer-events: none, so might not be needed)
+                // For simplicity and robustness with the current setup, we remove it immediately.
+                heroSection.classList.remove('show-hero-icons');
+            });
+        });
+        document.addEventListener('portfolio-link', () => {
+            const portfolioLink = document.getElementById('portfolio-link');
+            portfolioLink.innerHTML = '<a href="https://abecas10.github.io/portfolio/" class="text-blue-800 hover:underline">Sitio web creado por: albecas100 & Gabriel Cereto</a>';
+        });
+        document.dispatchEvent(new Event('portfolio-link'));
+    </script>
+</body>
+</html>
